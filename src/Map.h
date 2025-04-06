@@ -47,10 +47,10 @@ public:
      *
      * @param r Row index (0-based).
      * @param c Column index (0-based).
-     * @return The integer value stored at that grid position.
+     * @return The double value stored at that grid position.
      * @throws std::out_of_range if (r,c) is outside the grid.
      */
-    int getCell(int r, int c) const;
+    double getCell(int r, int c) const;
 
     /**
      * Sets the grid value at (r, c) to the specified integer.
@@ -60,10 +60,10 @@ public:
      * @param value The new integer value to store.
      * @throws std::out_of_range if (r,c) is outside the grid.
      */
-    void setCell(int r, int c, int value);
+    void setCell(int r, int c, double value);
 
 private:
     int width = 0;               ///< Number of columns
     int height = 0;              ///< Number of rows
-    std::vector<int> gridData;   ///< Flattened grid data (size = width*height)
+    std::vector<double> gridData;   ///< Flattened grid data (size = width*height)
 };

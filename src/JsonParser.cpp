@@ -11,12 +11,12 @@
  *   demonstration and for maps with a structure similar to the sample given.
  *
  * Usage:
- *   1) Include "JsonParser.h" in your code.
+ *   1) Include "JsonParser.h" in code.
  *   2) Create a JsonParser object, call parseJson(jsonString),
  *      and then retrieve the data via getGridData().
  *
  * Author: Tarun Trilokesh
- * Date:   2025-03-04
+ * Date:   2025-04-04
  *
  ******************************************************************************/
 
@@ -37,16 +37,12 @@ bool JsonParser::parseJson(const std::string& jsonData)
     // Parse until the end of the string ('\0')
     while(*pos != '\0') 
     {
-        //--------------------------------------------------------------------------
         // Skip any leading whitespace (spaces, tabs, newlines)
-        //--------------------------------------------------------------------------
         while (std::isspace((unsigned char)*pos)) {
             ++pos;
         }
 
-        //--------------------------------------------------------------------------
-        // 1) Locate the "layers" array by searching for the literal "\"layers\":"
-        //--------------------------------------------------------------------------
+        // Locate the "layers" array by searching for the literal "\"layers\":"
         if (!foundLayers && std::strncmp(pos, "\"layers\":", 8) == 0) {
             foundLayers = true;
             pos += 8; // Move the pointer past "\"layers\":"
@@ -57,9 +53,7 @@ bool JsonParser::parseJson(const std::string& jsonData)
             }
         }
 
-        //--------------------------------------------------------------------------
-        // 2) Once we've found "layers", look for the "\"data\":"
-        //--------------------------------------------------------------------------
+        // Once we've found "layers", look for the "\"data\":"
         if (foundLayers && std::strncmp(pos, "\"data\":", 6) == 0) {
             // Move pointer past "\"data\":"
             pos += 6;
@@ -69,16 +63,14 @@ bool JsonParser::parseJson(const std::string& jsonData)
                 ++pos;
             }
 
-            // Now we should be at the start of the "data" array
+            // If we find '[', we are now ready to read the data
             if (*pos == '[') {
                 ++pos;         // Move past '['
                 readingData = true;  // Indicate we're reading the tile data
             }
         }
 
-        //--------------------------------------------------------------------------
-        // 3) If we are reading the "data" array, parse numbers until ']' or '\0'
-        //--------------------------------------------------------------------------
+        // If we are reading the "data" array, parse numbers until ']' or '\0'
         if (readingData) {
             // Keep reading tokens until we reach ']' or end of string
             while (*pos != ']' && *pos != '\0') {
@@ -99,18 +91,32 @@ bool JsonParser::parseJson(const std::string& jsonData)
 
                 // Read the numeric characters (up to ',' or ']' or '\0')
                 while (*pos != ',' && *pos != ']' && *pos != '\0') {
-                    if (nbIndex < (int)sizeof(numberBuffer) - 1) {
-                        numberBuffer[nbIndex++] = *pos;
+                    if (std::isdigit(*pos) || *pos == '.' || *pos == '-' || *pos == '+') {
+                        // Only allow valid numeric characters
+                        if (nbIndex < (int)sizeof(numberBuffer) - 1) {
+                            numberBuffer[nbIndex++] = *pos;
+                        }
+                    } else if (!std::isspace((unsigned char)*pos)) {
+                        // Log an error for invalid characters (excluding whitespace)
+                        std::cerr << "Invalid character in numeric data: " << *pos << "\n";
+                        return false; // Exit on invalid character
                     }
                     ++pos;
                 }
+
                 // Null-terminate the buffer to make a proper C-string
                 numberBuffer[nbIndex] = '\0';
 
-                // Convert this numeric string to a double, then truncate to int
+                // Convert this numeric string to a double
                 if (nbIndex > 0) {
-                    double numValue = std::atof(numberBuffer);
-                    linearGridArray.push_back(static_cast<int>(numValue));
+                    try {
+                        double numValue = std::atof(numberBuffer);
+                        // Store the number in the linearGridArray
+                        linearGridArray.push_back(numValue);
+                    } catch (...) {
+                        std::cerr << "Error converting number: " << numberBuffer << "\n";
+                        return false; // Exit on conversion error
+                    }
                 }
 
                 // If we ended on a comma, skip it and move to next number
@@ -125,17 +131,13 @@ bool JsonParser::parseJson(const std::string& jsonData)
             }
         }
 
-        //--------------------------------------------------------------------------
-        // 4) Move past the current character if it's not '\0'
-        //--------------------------------------------------------------------------
+        // Move past the current character if it's not '\0'
         if (*pos != '\0') {
             ++pos;
         }
     }
 
-    //--------------------------------------------------------------------------
-    // Final check: Did we successfully extract any numbers?
-    //--------------------------------------------------------------------------
+    // Did we successfully extract any numbers?
     if (!linearGridArray.empty()) {
         std::cout << "Parsed grid data successfully!\n";
         return true;
@@ -144,5 +146,3 @@ bool JsonParser::parseJson(const std::string& jsonData)
         return false;
     }
 } // end of parseJson
-// end of JsonParser.cpp
- 

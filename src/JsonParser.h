@@ -2,18 +2,15 @@
  * File: JsonParser.h
  *
  * Description:
- *   A minimal, naive JSON parser designed to extract the tile data from
- *   the "data" array in the first layer of a map file (e.g., a RiskyLab
- *   tilemap JSON). This parser is not general-purpose JSON; it focuses on
- *   a specific structure and may fail if the JSON format deviates.
+ * Parses the JSON content, looking for "layers" and then "data" in
+ * the first layer. Extracts numeric values (including floating-point)
+ * and stores them in linearGridArray.
  *
- * Usage:
- *   1) Create a JsonParser instance.
- *   2) Call parseJson(...) with the raw JSON string from the file.
- *   3) Retrieve the parsed grid array via getGridData().
+ * @param jsonData A string containing the entire JSON content.
+ * @return True if parsing succeeded and data was extracted; false otherwise.
  *
  * Author: Tarun Trilokesh
- * Date:   2025-03-04
+ * Date:   2025-04-04
  *****************************************************************************/
 
 #pragma once
@@ -39,11 +36,11 @@ public:
      *
      * @return A vector of integers (the flattened map data).
      */
-    std::vector<int> getGridData() const { return linearGridArray; }
+    std::vector<double> getGridData() const { return linearGridArray; }
  
 private:
     // Stores the flattened map data from "layers[0].data"
-    std::vector<int> linearGridArray;
+    std::vector<double> linearGridArray;
 };
 
  

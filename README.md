@@ -1,38 +1,45 @@
-# RTS Pathfinding (Stage 2)
+# RTS Pathfinding (Stage 3)
 
 ## Overview
-This project demonstrates:
-- `Custom JSON parsing` (using a naive parser) to load a grid-based map.
-- Basic printing of the map to verify correct loading.
+This is a small C++ project showcasing:
+1. **`Manual JSON Parsing`** – We scan the contents of `layers[0].data` without using external libraries.  
+2. **`A* Pathfinding`** – We find the shortest path on a grid, treating cells with a value of `3` as blocked terrain.  
+3. **`JSON Output Generation`** – We produce a new JSON file (`output_map.json`) that can be visualized in [RiskyLab Tilemap](https://riskylab.com/tilemap/).
 
-Later stages will:
-- Implement A* pathfinding.
-- Output a new JSON for visualization in [RiskyLab Tilemap](https://riskylab.com/tilemap/).
+By this stage (Stage 3), we’ve added the A* search routine. The program now:
+- Loads `sample_map.json` from the `data` folder.
+- Searches for a path between two special cells (e.g., one marked with `0.5` as start, and one with `8.1` as goal).
+- Marks the path on the grid as `0.5`.
+- Writes the updated map data into `output_map.json` for easy viewing in [RiskyLab Tilemap](https://riskylab.com/tilemap/).
 
 ## Requirements
-- `C++17` or newer (example: `g++.exe 14.2.0`).
-- A terminal or command prompt to run `g++`.
+- A **C++17**-compatible compiler (e.g., `g++ 14.2.0` or newer).
+- A terminal or command prompt to run your compile commands.
 
 ## How to Build
-1. Ensure you have a compatible compiler (e.g., g++ 14.2.0).
-2. From the project root, compile using:
+1. Verify you have a compatible compiler (e.g., g++ 14.2.0).
+2. From the project root directory, compile the code using:
    ```bash
-   g++ -std=c++17 -o rts-pathfinding src/main.cpp src/Map.cpp src/JsonParser.cpp -I./src
+   g++ -std=c++17 -o rts-pathfinding src/main.cpp src/Map.cpp src/JsonParser.cpp src/Pathfinding.cpp -I./src
    ```
-   `(Adjust files as needed if your source list differs.)`
+   Adjust the source files as necessary if your project structure differs.
 
-3. `(Windows users)` can alternatively run:
-   ```bash
-   compile.bat
-   ```
+3. **Windows users** can run the provided `compile.bat` to compile in one step.
 
 ## How to Run
-After compiling:
+After a successful build, run:
 ```bash
 rts-pathfinding.exe
 ```
-- The program attempts to load `sample_map.json` in the current working directory.
-- It then prints the map dimensions and contents to confirm that the parsing works.
+
+
+The executable:
+1. Loads `data/sample_map.json`.
+2. Prints the map dimensions to confirm successful loading.
+3. Runs A* to find a path, marking that path in the map data with the special value `0.5`.
+4. Writes the result to `data/output_map.json`.
+
+**Pro Tip:** You can open `output_map.json` in [RiskyLab Tilemap](https://riskylab.com/tilemap/) to visually confirm your path.
 
 ## Project Structure
 ```
@@ -43,16 +50,27 @@ rts-pathfinding/
 │   ├── Map.cpp
 │   ├── JsonParser.h
 │   ├── JsonParser.cpp
+│   ├── Pathfinding.h
+│   ├── Pathfinding.cpp
+│   ├── Utils.h  
 │   └── ...
 ├── data/
 │   ├── sample_map.json
-│   └── output_map.json (generated in future stages)
-├── compile.bat (optional, for Windows)
-├── README.md (this file)
+│   └── output_map.json
+├── compile.bat
+├── README.md
 └── ...
 ```
+- `JsonParser.cpp` / `.h`: Manual JSON parsing to extract tilemap data.  
+- `Map.cpp` / `.h`: Holds the grid, allows getting/setting cells.  
+- `Pathfinding.cpp` / `.h`: Implements the A* search from start to goal.  
+- `Utils.h`: Helper functions to mark the path and produce a JSON output.  
+- `data/sample_map.json`: Example input map.  
+- `data/output_map.json`: Generated map file with the path marked.
 
-- `src/main.cpp`: Entry point, demonstrates loading and printing map data.
-- `src/Map.*`: Loads a grid from JSON and provides access to its cells.
-- `src/JsonParser.*`: Naive string-based parsing of the `layers[0].data` array from the JSON.
-- `data/sample_map.json`: The sample map used by Stage 2.
+## Conclusion
+By completing **Stage 3**:
+- We’ve integrated custom JSON parsing (`JsonParser`).
+- Implemented a **Map** class to store grid data.
+- Added **A\* pathfinding** to find and mark a path in your grid.
+- Output the updated map in JSON form for visualization.

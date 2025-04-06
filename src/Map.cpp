@@ -27,36 +27,28 @@
 
 bool Map::loadFromJson(const std::string& filePath)
 {
-    //--------------------------------------------------------------------------
-    // 1. Attempt to open the JSON file
-    //--------------------------------------------------------------------------
+    // Attempt to open the JSON file
     std::ifstream fin(filePath);
     if (!fin) {
         std::cerr << "Error opening file: " << filePath << std::endl;
         return false;
     }
 
-    //--------------------------------------------------------------------------
-    // 2. Read the entire file contents into a string
-    //--------------------------------------------------------------------------
+    // Read the entire file contents into a string
     std::string jsonContent(
         (std::istreambuf_iterator<char>(fin)),
          std::istreambuf_iterator<char>()
     );
 
-    //--------------------------------------------------------------------------
-    // 3. Use the custom JsonParser to extract the data array
-    //--------------------------------------------------------------------------
+    // Use the custom JsonParser to extract the data array
     JsonParser parser;
     if (!parser.parseJson(jsonContent)) {
         std::cerr << "Error parsing JSON data." << std::endl;
         return false;
     }
 
-    //--------------------------------------------------------------------------
-    // 4. Store the parsed data in our vector
+    // Store the parsed data in our vector
     //    - We assume a square map (width == height)
-    //--------------------------------------------------------------------------
     auto dataVector = parser.getGridData();
     int dataCount = static_cast<int>(dataVector.size());
     int dim = static_cast<int>(std::sqrt(dataCount));
@@ -74,24 +66,20 @@ bool Map::loadFromJson(const std::string& filePath)
     return true;
 }
 
-int Map::getCell(int r, int c) const
+double Map::getCell(int r, int c) const
 {
-    //--------------------------------------------------------------------------
     // Returns the integer stored at row r, column c.
     // Throws an exception if out of bounds.
-    //--------------------------------------------------------------------------
     if (r < 0 || r >= height || c < 0 || c >= width) {
         throw std::out_of_range("Cell coordinates out of range");
     }
     return gridData[r * width + c];
 }
 
-void Map::setCell(int r, int c, int value)
+void Map::setCell(int r, int c, double value)
 {
-    //--------------------------------------------------------------------------
     // Modifies the value at row r, column c.
     // Throws an exception if out of bounds.
-    //--------------------------------------------------------------------------
     if (r < 0 || r >= height || c < 0 || c >= width) {
         throw std::out_of_range("Cell coordinates out of range");
     }
