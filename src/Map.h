@@ -13,7 +13,7 @@
  *   4) Access or modify cell values using getCell(...) / setCell(...).
  *
  * Author: Tarun Trilokesh
- * Date:   2025-03-04
+ * Date:   2025-06-04
  ******************************************************************************/
 
 #pragma once
@@ -61,6 +61,14 @@ public:
      * @throws std::out_of_range if (r,c) is outside the grid.
      */
     void setCell(int r, int c, double value);
+
+    /**
+     * Finds all cells in the grid that match the specified value.
+     *
+     * @param targetValue The value to search for.
+     * @return A vector of (row, column) pairs where the value matches targetValue.
+     */
+    std::vector<std::pair<int,int>> findCellsByValue(double targetValue) const;
 
 private:
     int width = 0;               ///< Number of columns

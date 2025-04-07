@@ -5,8 +5,7 @@
  *
  * Overview:
  *   This header file provides utility functions for:
- *     1) Marking a path on a Map by overwriting certain cells (markPathOnMap).
- *     2) Generating a JSON string based on the updated Map data (generateJsonOutput).
+ *     1) Generating a JSON string based on the updated Map data (generateJsonOutput).
  *
  * Author:  Tarun Trilokesh
  * Date:    2025-06-04
@@ -15,30 +14,6 @@
 #include <string>
 #include <vector>
 #include "Map.h"
-
-/**
- * @brief Overwrite the cells along a path with a specific value (0.5).
- * 
- * This function iterates through each step in the given path and updates
- * the corresponding cell on the map. The value 0.5 is chosen arbitrarily
- * to denote a path, but it could be anything that signifies a marked cell.
- * 
- * @param map   Reference to the Map object.
- * @param path  Vector of (row, column) pairs representing the path.
- */
-inline void markPathOnMap(Map& map, const std::vector<std::pair<int,int>>& path) {
-  // If the path is empty or has only one cell, do nothing
-  // Dont overwrite the last cell in the path (goal cell)
-  if (path.size() < 2) {
-      return;
-  }
-
-  // Iterate until the second to last cell and overwrite those
-  for (size_t i = 0; i < path.size() - 1; ++i) {
-      auto &cell = path[i];
-      map.setCell(cell.first, cell.second, 0.5);
-  }
-}
 
 
 /**

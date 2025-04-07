@@ -2,12 +2,13 @@
  * File:    main.cpp
  *
  * Overview:
- *   This file is the entry point for the RTS Pathfinding Project. In this stage,
- *   it tests the custom JSON parsing by:
- *     1) Loading a sample map from "data/sample_map.json".
- *     2) Printing the map’s dimensions to confirm successful loading.
- *     3) Running an A* search from a cell with value 0.5 to a cell with value 8.1.
- *     4) Marking the found path on the map and writing the result to "data/output_map.json".
+ *   This file is the entry point for the RTS Pathfinding Project.
+ *   1) Load a map from JSON.
+ *   2) Detect agents (start values 0.5, 0.6, 0.9) and goals (8.1, 8.4, 8.13).
+ *   3) Each agent chooses its nearest goal. Multiple agents can share a goal.
+ *   4) Plan A* paths for each agent (if no path is found, that agent remains idle).
+ *   5) Mark each agent's path in the map using the agent's start value.
+ *   6) Step the agents in a collision-free manner, if desired.
  *
  * Author:  Tarun Trilokesh
  * Date:    2025-06-04
@@ -19,13 +20,25 @@
 #include "Map.h"
 #include "Pathfinding.h"
 #include "Utils.h"
+#include "MultiUnitCoordinator.h"
 
-int main() {
-    std::cout << "RTS Pathfinding - Stage 3 (Path Planning A* algorithm testing with JSON output)\n";
+int main(int argc, char* argv[]) {
+    std::cout << "RTS Pathfinding\n";
+
+    // Parse Command-Line Arguments
+    std::string inputFile  = "./data/single_unit_single_goal_test.json";   // default input
+    std::string outputFile = "data/output_map.json";   // default output
+
+    if (argc > 1) {
+        inputFile = argv[1];
+    }
+    if (argc > 2) {
+        outputFile = argv[2];
+    }
 
     // Create a Map object and attempt to load JSON data from sample_map.json
     Map map;
-    if (!map.loadFromJson("./data/sample_map.json")) {
+    if (!map.loadFromJson(inputFile)) {
         std::cerr << "Failed to load map from file.\n";
         return 1;
     }
@@ -60,56 +73,43 @@ int main() {
     //     std::cerr << "Error: " << e.what() << "\n";
     // }
 
-    // Variables to store the coordinates of the start and goal cells
-    int startRow = -1, startCol = -1;
-    int goalRow  = -1, goalCol  = -1;
+    // Create the multi-unit coordinator
+    MultiUnitCoordinator coordinator(map);
 
-    // Locate the cells with specific values that denote a start (0.5) and a goal (8.1)
-    for (int r = 0; r < map.getHeight(); ++r) {
-        for (int c = 0; c < map.getWidth(); ++c) {
-            double cellValue = map.getCell(r, c);
-            if (cellValue == 0.5) {
-                startRow = r;
-                startCol = c;
-            } else if (cellValue == 8.1) {
-                goalRow = r;
-                goalCol = c;
-            }
-        }
-    }
+    // Detect agent start positions and possible goals
+    coordinator.findStartsAndGoals();
 
-    // Use A* pathfinding to get a path from start to goal
-    auto path = Pathfinding::aStar(map, startRow, startCol, goalRow, goalCol);
+    // Assign each agent to its nearest goal (multiple agents can share)
+    coordinator.assignGoals();
 
-    // If the path is empty, no route was found
-    if (path.empty()) {
-        std::cout << "No path found.\n";
-    } else {
-        std::cout << "Path found! Steps:\n";
-        for (auto &step : path) {
-            std::cout << "(" << step.first << "," << step.second << ") -> ";
-        }
-        std::cout << "GOAL\n";
+    // Compute A* paths for each agent
+    coordinator.planPaths();
 
-        // Mark the path on the map (changes map internally)
-        markPathOnMap(map, path);
-        std::cout << "Path length: " << path.size() << "\n";
-    }
+    // Mark each agent's path on the map using its start value
+    // Agents with no path found won't mark anything.
+    coordinator.markPathsOnMap();
 
-    // Generate a new JSON string reflecting the path-marked map
-    std::string outputJson = generateJsonOutput(map, "data/sample_map.json");
+    //Export or print the updated map if you want to see the markings
+    std::string updatedJson = generateJsonOutput(map, inputFile);
+    std::ofstream out(outputFile);
+    out << updatedJson;
+    out.close();
+    std::cout << "Wrote updated map with paths to data folder.\n";
+    
 
-    // Write the updated map to an output file
-    std::ofstream fout("data/output_map.json");
-    if (!fout) {
-        std::cerr << "Could not open data/output_map.json for writing.\n";
-        return 1;
-    }
-    fout << outputJson;
-    fout.close();
+    // Step the agents for a demonstration of collision-free movement
+    // const int MAX_STEPS = 50;
+    // for (int step = 0; step < MAX_STEPS; ++step) {
+    //     std::cout << "Step " << step << ":\n";
+    //     coordinator.printAgents();
 
-    std::cout << "Wrote updated map with path to data/output_map.json\n";
-    std::cout << "Load it in your tilemap viewer to visualize the path.\n";
+    //     coordinator.step(); // each agent attempts to move 1 step
+
+    //     if (coordinator.allArrived()) {
+    //         std::cout << "All agents that found paths have arrived.\n";
+    //         break;
+    //     }
+    // }
 
     return 0;
 }

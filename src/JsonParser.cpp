@@ -16,7 +16,7 @@
  *      and then retrieve the data via getGridData().
  *
  * Author: Tarun Trilokesh
- * Date:   2025-04-04
+ * Date:   2025-06-04
  *
  ******************************************************************************/
 
@@ -26,6 +26,14 @@
 #include <cstring>  // for std::strncmp
 #include <cstdlib>  // for std::atof
 
+/**
+ * @brief Parses the JSON content, looking for "layers" and then "data" in
+ * the first layer. Extracts numeric values (float/double truncated
+ * to int) and stores them in linearGridArray.
+ *
+ * @param jsonData A string containing the entire JSON content.
+ * @return True if parsing succeeded and data was extracted; false otherwise.
+ */
 bool JsonParser::parseJson(const std::string& jsonData)
 {
     // Convert std::string to C-style string for pointer-based parsing

@@ -1,76 +1,101 @@
-# RTS Pathfinding (Stage 3)
+# RTS Pathfinding (Stage 4 – Final Release)
 
 ## Overview
-This is a small C++ project showcasing:
-1. **`Manual JSON Parsing`** – We scan the contents of `layers[0].data` without using external libraries.  
-2. **`A* Pathfinding`** – We find the shortest path on a grid, treating cells with a value of `3` as blocked terrain.  
-3. **`JSON Output Generation`** – We produce a new JSON file (`output_map.json`) that can be visualized in [RiskyLab Tilemap](https://riskylab.com/tilemap/).
+This C++ project demonstrates a **grid-based RTS pathfinding system** with:
 
-By this stage (Stage 3), we’ve added the A* search routine. The program now:
-- Loads `sample_map.json` from the `data` folder.
-- Searches for a path between two special cells (e.g., one marked with `0.5` as start, and one with `8.1` as goal).
-- Marks the path on the grid as `0.5`.
-- Writes the updated map data into `output_map.json` for easy viewing in [RiskyLab Tilemap](https://riskylab.com/tilemap/).
+1. **Manual JSON Parsing**  
+   Starts by scaning the JOSN for `layers[0].data` from `single_unit_single_goal_test.json` without external libraries.
+2. **A\* Pathfinding**  
+   The code finds the shortest path on a 2D grid, treating cells with value `3` as blocked terrain.
+3. **Multiple Unit Coordination**  
+   Using the `MultiUnitCoordinator`, multiple agents (each identified by special floating-point start values) can navigate to their goals.
+4. **JSON Output Generation**  
+   Produces a new `output_map.json` that can be loaded in [RiskyLab Tilemap](https://riskylab.com/tilemap/) for visual confirmation.
+
+In **Stage 4**, I’ve added multi-agent pathfinding. Each agent:
+- Can be marked by special floating values (`0.5`, `0.6`, `0.9`).
+- Searches for goals (`8.1`, `8.4`, `8.13`) and assigns itself to one.
+- Uses A* to plan a path, stepping around collisions with other agents.
 
 ## Requirements
-- A **C++17**-compatible compiler (e.g., `g++ 14.2.0` or newer).
-- A terminal or command prompt to run your compile commands.
+- **C++17** (e.g., `g++ 14.2.0` or newer).
+- A terminal or command prompt for compiling.
 
 ## How to Build
-1. Verify you have a compatible compiler (e.g., g++ 14.2.0).
-2. From the project root directory, compile the code using:
+1. Ensure your compiler supports C++17.
+2. In the project root, compile all sources:
    ```bash
-   g++ -std=c++17 -o rts-pathfinding src/main.cpp src/Map.cpp src/JsonParser.cpp src/Pathfinding.cpp -I./src
+   g++ -std=c++17 -o rts-pathfinding src/main.cpp src/Map.cpp src/JsonParser.cpp src/Pathfinding.cpp src/MultiUnitCoordinator.cpp -I./src
    ```
-   Adjust the source files as necessary if your project structure differs.
-
-3. **Windows users** can run the provided `compile.bat` to compile in one step.
+3. On **Windows**, run `compile.bat`.
 
 ## How to Run
-After a successful build, run:
+After building, run the executable created after compiling. The two arguments after the executable can be provided as input and output JSON locations respectively:
 ```bash
-rts-pathfinding.exe
+.\rts-pathfinding.exe .\data\single_unit_single_goal_test.json .\data\output_map.json
 ```
 
-
-The executable:
 1. Loads `data/sample_map.json`.
-2. Prints the map dimensions to confirm successful loading.
-3. Runs A* to find a path, marking that path in the map data with the special value `0.5`.
-4. Writes the result to `data/output_map.json`.
+2. Finds agent start cells (`0.5`, `0.6`, `0.9`) and goals (`8.1`, `8.4`, `8.13`).
+3. Assigns goals, runs A* per agent, and marks the map if configured.
+4. Writes the updated map as `data/output_map.json`.
+5. Optionally runs a collision-free step simulation, printing agent states.
 
-**Pro Tip:** You can open `output_map.json` in [RiskyLab Tilemap](https://riskylab.com/tilemap/) to visually confirm your path.
+## RiskyLab Icons for Starts and Goals
+To help visualize in **RiskyLab**, you can assign custom icons to specific cell values:
+- **Starts**:
+  - `0.5`  -> ![Initial Map Screenshot](images/red.png)
+  - `0.6`  -> ![Initial Map Screenshot](images/blue.png)
+  - `0.9`  -> ![Initial Map Screenshot](images/purple.png)
+- **Goals**:
+  - `8.1`  -> ![Initial Map Screenshot](images/red_goal.png)
+  - `8.4`  -> ![Initial Map Screenshot](images/blue_goal.png)
+  - `8.13` -> ![Initial Map Screenshot](images/purple_goal.png)
+
+## Sample Output Images
+Below are two screenshots illustrating how the final result may look in RiskyLab:
+
+1. **Single Unit Path Planning**  
+   ![Initial Map Screenshot](images/single_unit.png)
+
+2. **Multi Unit Path Planning 1**  
+   ![Final Map Screenshot](images/multi_unit.png)
+
+2. **Multi Unit Path Planning 2**  
+   ![Final Map Screenshot](images/multi_unit1.png)
+
+(These images are just examples; actual appearances depend on your tileset configuration and map data.)
 
 ## Project Structure
 ```
 rts-pathfinding/
 ├── src/
 │   ├── main.cpp
-│   ├── Map.h
-│   ├── Map.cpp
-│   ├── JsonParser.h
-│   ├── JsonParser.cpp
-│   ├── Pathfinding.h
-│   ├── Pathfinding.cpp
-│   ├── Utils.h  
+│   ├── Map.h / Map.cpp
+│   ├── JsonParser.h / JsonParser.cpp
+│   ├── Pathfinding.h / Pathfinding.cpp
+│   ├── MultiUnitCoordinator.h / MultiUnitCoordinator.cpp
+│   ├── Utils.h   (optional helpers for JSON output or path marking)
 │   └── ...
 ├── data/
 │   ├── sample_map.json
-│   └── output_map.json
+│   └── output_map.json   (created after pathfinding)
+├── images/
+│   ├── before_pathfinding.png
+│   └── after_pathfinding.png
 ├── compile.bat
 ├── README.md
 └── ...
 ```
-- `JsonParser.cpp` / `.h`: Manual JSON parsing to extract tilemap data.  
-- `Map.cpp` / `.h`: Holds the grid, allows getting/setting cells.  
-- `Pathfinding.cpp` / `.h`: Implements the A* search from start to goal.  
-- `Utils.h`: Helper functions to mark the path and produce a JSON output.  
-- `data/sample_map.json`: Example input map.  
-- `data/output_map.json`: Generated map file with the path marked.
+- **`JsonParser.*`**: Manually loads tile data from `layers[0].data`.
+- **`Map.*`**: Stores and provides access to the grid.
+- **`Pathfinding.*`**: Implements A* search for single-unit pathfinding.
+- **`MultiUnitCoordinator.*`**: Manages multiple agents, assigning goals and simulating discrete movement steps.
+- **`data/`**: Contains the original and updated JSON maps.
+- **`images/`**: Example screenshots and any custom icons for starts/goals.
 
 ## Conclusion
-By completing **Stage 3**:
-- We’ve integrated custom JSON parsing (`JsonParser`).
-- Implemented a **Map** class to store grid data.
-- Added **A\* pathfinding** to find and mark a path in your grid.
-- Output the updated map in JSON form for visualization.
+With **Stage 4**, we have:
+1. **Multi-agent** pathfinding with collision avoidance.
+2. **Custom icons** for starts/goals in RiskyLab.
+3. **JSON** output for visualizing your final map and agent routes.
